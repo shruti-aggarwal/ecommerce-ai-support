@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEase AI Support Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            height: 650px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bot-avatar {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-info h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .quick-actions {
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .quick-actions h3 {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.user .message-avatar {
+            background: #e0e0e0;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px;
+            background: white;
+            border-radius: 18px;
+            width: fit-content;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .escalation-alert {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        .order-card h4 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .order-status.delivered { background: #d4edda; color: #155724; }
+        .order-status.transit { background: #cce5ff; color: #004085; }
+        .order-status.processing { background: #fff3cd; color: #856404; }
+
+        .metrics-dashboard {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 250px;
+            display: none;
+        }
+
+        .metrics-dashboard.active {
+            display: block;
+        }
+
+        .metric-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .toggle-metrics {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="bot-avatar">🤖</div>
+            <div class="header-info">
+                <h1>ShopEase Support</h1>
+                <p>AI-Powered Assistant • Available 24/7</p>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="sendQuickAction('Track my order')">📦 Track Order</button>
+                <button class="action-btn" onclick="sendQuickAction('Return an item')">↩️ Returns</button>
+                <button class="action-btn" onclick="sendQuickAction('Payment issue')">💳 Payment</button>
+                <button class="action-btn" onclick="sendQuickAction('Product inquiry')">🛍️ Products</button>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    Hello! I'm your AI shopping assistant. I can help you with:
+                    <br><br>
+                    • 📦 Order tracking & delivery updates<br>
+                    • ↩️ Returns & refunds<br>
+                    • 💳 Payment & billing questions<br>
+                    • 🛍️ Product recommendations<br>
+                    <br>
+                    How can I assist you today?
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" class="input-field" id="userInput" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendMessage()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <button class="toggle-metrics" onclick="toggleMetrics()">📊 View Metrics</button>
+    
+    <div class="metrics-dashboard" id="metricsDashboard">
+        <h3 style="margin-bottom: 15px; font-size: 16px;">Live Metrics</h3>
+        <div class="metric-item">
+            <div class="metric-label">Total Conversations</div>
+            <div class="metric-value" id="totalConversations">1</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-label">Messages Exchanged</div>
+            <div class="metric-value" id="messageCount">1</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-label">Avg Response Time</div>
+            <div class="metric-value" id="avgResponseTime">0.8s</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-label">Resolution Rate</div>
+            <div class="metric-value" id="resolutionRate">85%</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-label">Escalation Rate</div>
+            <div class="metric-value" id="escalationRate">15%</div>
+        </div>
+    </div>
+
+    <script>
+        let messageCount = 1;
+        let escalationCount = 0;
+        let resolutionCount = 0;
+
+        // Response database
+        const responses = {
+            greeting: [
+                "Hello! How can I help you today?",
+                "Hi there! What can I assist you with?",
+                "Welcome! I'm here to help with your shopping needs."
+            ],
+            order: {
+                track: "I can help you track your order. Please provide your order number (format: ORD-XXXXX) and I'll fetch the details for you.",
+                status: "Let me check your order status...",
+                found: (orderId) => `
+                    <div class="order-card">
+                        <h4>Order ${orderId}</h4>
+                        <p style="font-size: 12px; color: #666; margin: 5px 0;">Placed: ${new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
+                        <span class="order-status ${['delivered', 'transit', 'processing'][Math.floor(Math.random() * 3)]}">${['Delivered', 'In Transit', 'Processing'][Math.floor(Math.random() * 3)]}</span>
+                        <p style="font-size: 12px; margin-top: 8px;">Expected delivery: ${new Date(Date.now() + Math.random() * 3 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
+                    </div>
+                `
+            },
+            returns: {
+                policy: "Our return policy allows returns within 30 days of delivery. Items must be unused and in original packaging. Would you like to initiate a return?",
+                process: "To start a return:\n1. Go to 'My Orders'\n2. Select the item\n3. Click 'Return Item'\n4. Choose reason and submit\n\nNeed help with a specific order?",
+                refund: "Refunds are typically processed within 5-7 business days after we receive the returned item. You'll receive an email confirmation once it's initiated."
+            },
+            payment: {
+                methods: "We accept:\n• Credit/Debit cards (Visa, Mastercard, Amex)\n• Digital wallets (PayPal, Apple Pay, Google Pay)\n• Buy now, pay later options\n• Gift cards\n\nHaving trouble with payment?",
+                failed: "I understand you're having payment issues. Common solutions:\n1. Check card details are correct\n2. Ensure sufficient funds\n3. Try a different payment method\n4. Clear browser cache\n\nStill facing issues? I can connect you with a payment specialist.",
+                security: "Your payment security is our priority. All transactions are encrypted with SSL and we never store your full card details. We're PCI-DSS compliant."
+            },
+            product: {
+                search: "I can help you find products! What are you looking for? Tell me about your preferences (size, color, budget) and I'll suggest the best options.",
+                recommendations: "Based on your interests, here are some popular items:\n• Electronics: Latest smartphones, laptops\n• Fashion: Trending seasonal collections\n• Home: Smart home devices\n\nWhat category interests you?",
+                availability: "I'll check product availability. Please provide the product name or SKU number."
+            },
+            escalation: {
+                trigger: "I understand this might need special attention. Let me connect you with a human agent who can better assist you.",
+                alert: '<div class="escalation-alert">⚠️ Connecting to human agent... Estimated wait: 2-3 minutes</div>'
+            }
+        };
+
+        function detectIntent(message) {
+            const lower = message.toLowerCase();
+            
+            // Order-related
+            if (lower.includes('order') || lower.includes('track') || lower.includes('delivery') || lower.includes('ship')) {
+                if (lower.includes('track')) return 'order_track';
+                if (lower.includes('status')) return 'order_status';
+                return 'order_general';
+            }
+            
+            // Returns
+            if (lower.includes('return') || lower.includes('refund') || lower.includes('exchange')) {
+                if (lower.includes('refund')) return 'return_refund';
+                if (lower.includes('policy')) return 'return_policy';
+                return 'return_process';
+            }
+            
+            // Payment
+            if (lower.includes('payment') || lower.includes('pay') || lower.includes('card') || lower.includes('billing')) {
+                if (lower.includes('fail') || lower.includes('error') || lower.includes('issue')) return 'payment_failed';
+                if (lower.includes('secure') || lower.includes('safe')) return 'payment_security';
+                return 'payment_methods';
+            }
+            
+            // Products
+            if (lower.includes('product') || lower.includes('item') || lower.includes('buy') || lower.includes('search')) {
+                if (lower.includes('recommend')) return 'product_recommendations';
+                if (lower.includes('available') || lower.includes('stock')) return 'product_availability';
+                return 'product_search';
+            }
+            
+            // Escalation triggers
+            if (lower.includes('human') || lower.includes('agent') || lower.includes('speak') || lower.includes('talk') || 
+                lower.includes('angry') || lower.includes('frustrated') || lower.includes('terrible') || lower.includes('worst')) {
+                return 'escalation';
+            }
+            
+            // Order ID pattern
+            if (/ord-\d{5}/i.test(lower)) {
+                return 'order_lookup';
+            }
+            
+            return 'general';
+        }
+
+        function generateResponse(intent, message) {
+            switch(intent) {
+                case 'order_track':
+                    return responses.order.track;
+                case 'order_status':
+                    return responses.order.status;
+                case 'order_lookup':
+                    const orderId = message.match(/ord-\d{5}/i)[0].toUpperCase();
+                    resolutionCount++;
+                    return responses.order.found(orderId);
+                case 'return_policy':
+                    return responses.returns.policy;
+                case 'return_process':
+                    return responses.returns.process;
+                case 'return_refund':
+                    return responses.returns.refund;
+                case 'payment_failed':
+                    return responses.payment.failed;
+                case 'payment_security':
+                    return responses.payment.security;
+                case 'payment_methods':
+                    return responses.payment.methods;
+                case 'product_search':
+                    return responses.product.search;
+                case 'product_recommendations':
+                    return responses.product.recommendations;
+                case 'product_availability':
+                    return responses.product.availability;
+                case 'escalation':
+                    escalationCount++;
+                    updateMetrics();
+                    return responses.escalation.trigger + responses.escalation.alert;
+                default:
+                    return "I'm here to help! Could you please tell me more about what you need assistance with? You can ask about orders, returns, payments, or products.";
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Show typing indicator
+            showTyping();
+            
+            // Generate and send bot response
+            setTimeout(() => {
+                hideTyping();
+                const intent = detectIntent(message);
+                const response = generateResponse(intent, message);
+                addMessage(response, 'bot');
+                updateMetrics();
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function sendQuickAction(action) {
+            document.getElementById('userInput').value = action;
+            sendMessage();
+        }
+
+        function addMessage(content, sender) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = sender === 'bot' ? '🤖' : '👤';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            chatArea.appendChild(messageDiv);
+            
+            chatArea.scrollTop = chatArea.scrollHeight;
+            messageCount++;
+        }
+
+        function showTyping() {
+            const chatArea = document.getElementById('chatArea');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator active';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) typing.remove();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function toggleMetrics() {
+            const dashboard = document.getElementById('metricsDashboard');
+            dashboard.classList.toggle('active');
+        }
+
+        function updateMetrics() {
+            document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('avgResponseTime').textContent = (0.5 + Math.random() * 1.5).toFixed(1) + 's';
+            
+            const escalationRate = Math.min(30, (escalationCount / Math.max(1, messageCount / 2)) * 100);
+            document.getElementById('escalationRate').textContent = escalationRate.toFixed(0) + '%';
+            
+            const resolutionRate = Math.max(70, 100 - escalationRate);
+            document.getElementById('resolutionRate').textContent = resolutionRate.toFixed(0) + '%';
+        }
+    </script>
+</body>
+</html>
